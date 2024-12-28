@@ -106,3 +106,31 @@ func ShowResults(guess string, word string) {
 	fmt.Println()
 	// fmt.Println(emoji)
 }
+
+var playerGuessNum = 0
+var playerGotIt = false
+
+func PlayerPlay(word string) {
+	fmt.Println(" __        __            _ _      ")
+	fmt.Println(" \\ \\      / /__  _ __ __| | | ___ ")
+	fmt.Println("  \\ \\ /\\ / / _ \\| '__/ _` | |/ _ \\")
+	fmt.Println("   \\ V  V / (_) | | | (_| | |  __/")
+	fmt.Println("    \\_/\\_/ \\___/|_|  \\__,_|_|\\___|")
+	fmt.Println("-----------------------------------")
+	won := false
+
+	for i := 0; i < 6; i++ {
+		guess := strings.ToLower(GetGuess())
+		playerGuessNum++
+		ShowResults(guess, word)
+		if DoesGuessMatch(guess, word) {
+			fmt.Println("You Got It!")
+			playerGotIt = true
+			won = true
+			break
+		}
+	}
+	if !won {
+		fmt.Println("You are out of guesses! The word was", word)
+	}
+}

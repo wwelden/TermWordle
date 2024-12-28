@@ -116,7 +116,8 @@ func PlayerPlay(word string) {
 	for i := 0; i < 6; i++ {
 		guess := strings.ToLower(GetGuess())
 		playerGuessNum++
-		ShowResults(guess, word)
+		// ShowResults(guess, word)
+		ShowResultsEnhanced(guess, word)
 		if DoesGuessMatch(guess, word) {
 			fmt.Println("You Got It!")
 			playerGotIt = true

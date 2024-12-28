@@ -12,6 +12,8 @@ func CanYouBeatTheAI(word string) {
 	fmt.Println("AI guesses:", AIGuessNum)
 	if playerGuessNum > AIGuessNum || (AIGotIt && !playerGotIt) {
 		fmt.Println("AI wins!")
+	} else if playerGuessNum == AIGuessNum {
+		fmt.Println("You tied!")
 	} else {
 		fmt.Println("Player wins!")
 	}

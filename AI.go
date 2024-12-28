@@ -57,6 +57,27 @@ func GetAllWordsThatMatch(guess string, word string, wordList []string) []string
 	return matches
 }
 
+func GetAllWordsWithOutLetters(guess string, word string, wordList []string) []string {
+	letters := CheckGuess(guess, word)
+	matches := []string{}
+
+	for _, testWord := range wordList {
+		isMatch := true
+		for i := range letters {
+			if letters[i] {
+				if testWord[i] == guess[i] {
+					isMatch = false
+					break
+				}
+			}
+		}
+		if isMatch {
+			matches = append(matches, testWord)
+		}
+	}
+	return matches
+}
+
 func findSubSet(matches []string, contained []string) []string {
 	subset := []string{}
 	for _, match := range matches {
@@ -105,7 +126,8 @@ var AIGotIt = false
 func CompeteLoop(word string, wordList []string) {
 	for i := 0; i < 6; i++ {
 		guess := Compete(word, wordList)
-		ShowResults2(guess, word)
+		// ShowResults2(guess, word)
+		ShowResultsEnhancedAI(guess, word)
 		AIGuessNum++
 		if DoesGuessMatch(guess, word) {
 			fmt.Println("AI Got It!")

@@ -127,12 +127,12 @@ func CompeteLoop(word string, wordList []string) {
 }
 
 func AIPlay(word string) {
-	fmt.Println(" __        __            _ _      ")
-	fmt.Println(" \\ \\      / /__  _ __ __| | | ___ ")
-	fmt.Println("  \\ \\ /\\ / / _ \\| '__/ _` | |/ _ \\")
-	fmt.Println("   \\ V  V / (_) | | | (_| | |  __/")
-	fmt.Println("    \\_/\\_/ \\___/|_|  \\__,_|_|\\___|")
-	fmt.Println("-----------------------------------")
+	// fmt.Println(" __        __            _ _      ")
+	// fmt.Println(" \\ \\      / /__  _ __ __| | | ___ ")
+	// fmt.Println("  \\ \\ /\\ / / _ \\| '__/ _` | |/ _ \\")
+	// fmt.Println("   \\ V  V / (_) | | | (_| | |  __/")
+	// fmt.Println("    \\_/\\_/ \\___/|_|  \\__,_|_|\\___|")
+	// fmt.Println("-----------------------------------")
 	fmt.Println("AI's turn")
 	wordList := ReadFile()
 	CompeteLoop(word, wordList)

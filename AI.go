@@ -87,24 +87,16 @@ func Compete(word string, wordList []string) string {
 func ShowResults2(guess string, word string) {
 	rightSpots := CheckGuess(guess, word)
 	rightLetters := GuessContains(guess, word)
-	// Move cursor up one line to overwrite the input
-	// fmt.Print("\033[1A\r")
-	// Clear the current line
-	// fmt.Print("\033[K")
 	for i := range rightSpots {
 		if rightSpots[i] {
-			fmt.Printf(Green + strings.ToUpper(string(guess[i])) + White)
-			// emoji += "🟩"
+			fmt.Print(Green + strings.ToUpper(string(guess[i])) + White)
 		} else if rightLetters[i] {
-			fmt.Printf(Yellow + strings.ToUpper(string(guess[i])) + White)
-			// emoji += "🟨"
+			fmt.Print(Yellow + strings.ToUpper(string(guess[i])) + White)
 		} else {
-			fmt.Printf(White + strings.ToUpper(string(guess[i])) + White)
-			// emoji += "⬜"
+			fmt.Print(White + strings.ToUpper(string(guess[i])) + White)
 		}
 	}
 	fmt.Println()
-	// fmt.Println(emoji)
 }
 
 var AIGuessNum = 0

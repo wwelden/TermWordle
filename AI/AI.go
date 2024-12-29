@@ -94,13 +94,34 @@ func GetLettersInWord(guess string, word string) string {
 	}
 	return letters
 }
+func GetYellowLetters(guess string, word string) string {
+	letters := ""
+	used := make(map[rune]bool) // Track letters already added
+
+	for _, letter := range guess {
+		// If the letter is in the word and not already added to the result
+		if strings.Contains(word, string(letter)) && !used[letter] {
+			letters += string(letter)
+			used[letter] = true
+		}
+	}
+	return letters
+}
 
 func GetAllWordsWithYellowLetters(guess string, word string, wordList []string) []string {
-	letters := GetLettersInWord(guess, word)
+	yellowLetters := GetYellowLetters(guess, word) // Get all yellow letters
 	matches := []string{}
 
 	for _, testWord := range wordList {
-		if WordHasLetter(testWord, letters) {
+		isValid := true
+		for _, letter := range yellowLetters {
+			if !strings.Contains(testWord, string(letter)) {
+				isValid = false
+				break
+			}
+		}
+		// Ensure the word contains all yellow letters
+		if isValid {
 			matches = append(matches, testWord)
 		}
 	}

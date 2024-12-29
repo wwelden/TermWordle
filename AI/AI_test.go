@@ -1,6 +1,7 @@
 package AI
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/wwelden/TermWordle/Wordle"
@@ -159,11 +160,66 @@ func TestWordHasLetter(t *testing.T) {
 }
 
 func TestGetLettersNotInWord(t *testing.T) {
-	word := "apple"
-	guess := "apply"
-	letters := GetLettersNotInWord(word, guess)
-	if letters != "y" {
-		t.Errorf("GetLettersNotInWord returned %s, expected y", letters)
+	tests := []struct {
+		name     string
+		word     string
+		guess    string
+		expected string
+	}{
+		{
+			name:     "Basic case with one unmatched letter",
+			word:     "apple",
+			guess:    "apply",
+			expected: "y", // "y" is not in "apple"
+		},
+		{
+			name:     "All letters unmatched",
+			word:     "apple",
+			guess:    "brick",
+			expected: "brick", // All letters in "brick" are not in "apple"
+		},
+		{
+			name:     "No unmatched letters",
+			word:     "apple",
+			guess:    "apple",
+			expected: "", // All letters in "guess" are in "word"
+		},
+		{
+			name:     "Repeated unmatched letters",
+			word:     "apple",
+			guess:    "applyy",
+			expected: "yy", // Only one "y" should be returned
+		},
+		{
+			name:     "Mixed matches and unmatched letters",
+			word:     "apple",
+			guess:    "apric",
+			expected: "ric", // "r", "c", and "i" are not in "apple"
+		},
+		{
+			name:     "Empty guess string",
+			word:     "apple",
+			guess:    "",
+			expected: "", // No letters to match
+		},
+		{
+			name:     "Empty word string",
+			word:     "",
+			guess:    "apple",
+			expected: "apple", // All letters in "guess" are unmatched
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := GetLettersNotInWord(test.word, test.guess)
+
+			// Compare the result with the expected output
+			if result != test.expected {
+				t.Errorf("For word=%q and guess=%q, expected %q but got %q",
+					test.word, test.guess, test.expected, result)
+			}
+		})
 	}
 }
 
@@ -190,12 +246,60 @@ func TestGetLettersInWord(t *testing.T) {
 }
 
 func TestGetAllWordsWithYellowLetters(t *testing.T) {
-	guess := "apple"
-	word := "apply"
-	wordList := []string{"apple", "food", "house", "housework", "housework"}
-	matches := GetAllWordsWithYellowLetters(guess, word, wordList)
-	if len(matches) != 1 {
-		t.Errorf("GetAllWordsWithYellowLetters returned %d matches, expected 1", len(matches))
+	tests := []struct {
+		guess    string
+		word     string
+		wordList []string
+		expected []string
+	}{
+		{
+			guess:    "apple",
+			word:     "peach",
+			wordList: []string{"peach", "grape", "plane", "apple"},
+			expected: []string{"peach", "grape", "plane"}, // "p", "e", "a" are yellow letters
+		},
+		{
+			guess:    "table",
+			word:     "plant",
+			wordList: []string{"plant", "plate", "blame", "table"},
+			expected: []string{"plant", "plate", "blame"}, // "t", "a", "l" are yellow letters
+		},
+		{
+			guess:    "stone",
+			word:     "notes",
+			wordList: []string{"notes", "tones", "stone", "nest"},
+			expected: []string{"notes", "tones", "nest"}, // "s", "t", "o", "n", "e" are yellow letters
+		},
+		{
+			guess:    "apple",
+			word:     "apple",
+			wordList: []string{"apple", "ample", "apply"},
+			expected: []string{"apple", "ample", "apply"}, // All letters are yellow
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("guess=%s, word=%s", test.guess, test.word), func(t *testing.T) {
+			matches := GetAllWordsWithYellowLetters(test.guess, test.word, test.wordList)
+
+			// Validate the results
+			if len(matches) != len(test.expected) {
+				t.Errorf("Expected %d matches, got %d", len(test.expected), len(matches))
+			}
+
+			for _, expectedWord := range test.expected {
+				found := false
+				for _, match := range matches {
+					if match == expectedWord {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected word %s not found in matches: %v", expectedWord, matches)
+				}
+			}
+		})
 	}
 }
 
@@ -229,6 +333,7 @@ func TestCompete(t *testing.T) {
 		t.Errorf("Compete returned a guess with length %d, expected 5", len(guess))
 	}
 }
+
 func TestCompeteEnhanced(t *testing.T) {
 	tests := []struct {
 		name       string

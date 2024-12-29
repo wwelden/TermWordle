@@ -16,7 +16,7 @@ var (
 )
 
 func ReadFile() []string {
-	inputFile, err := os.ReadFile("WordList.txt")
+	inputFile, err := os.ReadFile("/Users/williamwelden/Developer/TermWordle/WordList.txt")
 	if err != nil {
 		panic(err)
 	}

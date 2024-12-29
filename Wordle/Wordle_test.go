@@ -27,17 +27,6 @@ func TestGetWord(t *testing.T) {
 	}
 }
 
-// func TestGetGuess(t *testing.T) {
-// 	guess := GetGuess()
-// 	if len(guess) != 5 {
-// 		t.Errorf("GetGuess returned a guess with length %d, expected 5", len(guess))
-// 	}
-// 	wordList := ReadFile()
-// 	if !slices.Contains(wordList, guess) {
-// 		t.Errorf("GetGuess returned a guess that is not in the word list")
-// 	}
-// }
-
 func TestCheckLetter(t *testing.T) {
 	guess := "apple"
 	word := "apply"
@@ -77,7 +66,7 @@ func TestGuessContains(t *testing.T) {
 }
 
 func TestDoesGuessMatch(t *testing.T) {
-	guess := "apple"
+	guess := "apply"
 	word := "apply"
 	result := DoesGuessMatch(guess, word)
 	if !result {

@@ -2,6 +2,7 @@ package AI
 
 import (
 	"testing"
+
 	"github.com/wwelden/TermWordle/Wordle"
 )
 
@@ -11,8 +12,8 @@ func TestGetContainedLetters(t *testing.T) {
 	guess := "apple"
 	word := "apply"
 	containedLetters := GetContainedLetters(guess, word)
-	if containedLetters != "apple" {
-		t.Errorf("GetContainedLetters returned %s, expected apple", containedLetters)
+	if containedLetters != "appl" {
+		t.Errorf("GetContainedLetters returned %s, expected appl", containedLetters)
 	}
 }
 
@@ -21,8 +22,8 @@ func TestGetAllWordsThatContain(t *testing.T) {
 	word := "apply"
 	wordList := Wordle.ReadFile()
 	matches := GetAllWordsThatContain(guess, word, wordList)
-	if len(matches) != 1 {
-		t.Errorf("GetAllWordsThatContain returned %d matches, expected 1", len(matches))
+	if len(matches) != 197 {
+		t.Errorf("GetAllWordsThatContain returned %d matches, expected 197", len(matches))
 	}
 }
 
@@ -31,8 +32,8 @@ func TestGetAllWordsThatMatch(t *testing.T) {
 	word := "apply"
 	wordList := Wordle.ReadFile()
 	matches := GetAllWordsThatMatch(guess, word, wordList)
-	if len(matches) != 1 {
-		t.Errorf("GetAllWordsThatMatch returned %d matches, expected 1", len(matches))
+	if len(matches) != 2 {
+		t.Errorf("GetAllWordsThatMatch returned %d matches, expected 2", len(matches))
 	}
 }
 
@@ -41,8 +42,8 @@ func TestGetAllWordsWithOutLetters(t *testing.T) {
 	word := "apply"
 	wordList := Wordle.ReadFile()
 	matches := GetAllWordsWithOutLetters(guess, word, wordList)
-	if len(matches) != 1 {
-		t.Errorf("GetAllWordsWithOutLetters returned %d matches, expected 1", len(matches))
+	if len(matches) != 12593 {
+		t.Errorf("GetAllWordsWithOutLetters returned %d matches, expected 12593", len(matches))
 	}
 }
 

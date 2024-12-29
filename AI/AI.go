@@ -59,21 +59,70 @@ func GetAllWordsThatMatch(guess string, word string, wordList []string) []string
 	return matches
 }
 
+func WordHasLetter(word string, letter string) bool {
+	return strings.Contains(word, letter)
+}
+func GetLettersNotInWord(word string, guess string) string {
+	letters := ""
+	for _, letter := range guess {
+		if !strings.Contains(word, string(letter)) {
+			letters += string(letter)
+		}
+	}
+	return letters
+}
+
 func GetAllWordsWithOutLetters(guess string, word string, wordList []string) []string {
-	letters := Wordle.CheckGuess(guess, word)
+	letters := GetLettersNotInWord(word, guess)
 	matches := []string{}
 
 	for _, testWord := range wordList {
-		isMatch := true
-		for i := range letters {
-			if letters[i] {
-				if testWord[i] == guess[i] {
-					isMatch = false
-					break
-				}
-			}
+		if !WordHasLetter(testWord, letters) {
+			matches = append(matches, testWord)
 		}
-		if isMatch {
+	}
+	return matches
+}
+func GetLettersInWord(guess string, word string) string {
+	letters := ""
+	used := make(map[rune]bool) // Track letters already added
+	for _, letter := range guess {
+		if strings.Contains(word, string(letter)) && !used[letter] {
+			letters += string(letter)
+			used[letter] = true // Mark letter as used
+		}
+	}
+	return letters
+}
+
+func GetAllWordsWithYellowLetters(guess string, word string, wordList []string) []string {
+	letters := GetLettersInWord(guess, word)
+	matches := []string{}
+
+	for _, testWord := range wordList {
+		if WordHasLetter(testWord, letters) {
+			matches = append(matches, testWord)
+		}
+	}
+	return matches
+}
+
+func GetAllCorrectLetters(guess string, word string) string {
+	letters := ""
+	for i := range guess {
+		if guess[i] == word[i] {
+			letters += string(guess[i])
+		}
+	}
+	return letters
+}
+
+func GetAllWordsWithGreenLetters(guess string, word string, wordList []string) []string {
+	letters := GetAllCorrectLetters(guess, word)
+	matches := []string{}
+
+	for _, testWord := range wordList {
+		if WordHasLetter(testWord, letters) {
 			matches = append(matches, testWord)
 		}
 	}
@@ -93,8 +142,35 @@ func findSubSet(matches []string, contained []string) []string {
 	return subset
 }
 
+func findSubSet2(matches []string, contained []string, wordWithOut []string) []string {
+	subset := []string{}
+	for _, match := range matches {
+		inContained := false
+		inWithout := false
+		for _, contain := range contained {
+			if match == contain {
+				inContained = true
+				break
+			}
+		}
+		for _, without := range wordWithOut {
+			if match == without {
+				inWithout = true
+				break
+			}
+		}
+		if inContained && inWithout {
+			subset = append(subset, match)
+		}
+	}
+	return subset
+}
+
 func FirstGuess(wordList []string) string {
 	length := len(wordList)
+	if length == 0 {
+		return "" // Return an empty string if the word list is empty
+	}
 	randomIndex := rand.Intn(length)
 	return wordList[randomIndex]
 }
@@ -104,7 +180,17 @@ func Compete(word string, wordList []string) string {
 	matches := GetAllWordsThatMatch(guess, word, wordList)
 	contained := GetAllWordsThatContain(guess, word, wordList)
 	subset := findSubSet(matches, contained)
+	// wordWithOut := GetAllWordsWithOutLetters(guess, word, wordList)
+	// subset2 := findSubSet2(matches, contained, wordWithOut)
 	return FirstGuess(subset)
+}
+func CompeteEnhanced(word string, wordList []string, firstGuessFunc func([]string) string) string {
+	guess := firstGuessFunc(wordList) // Use the injected function
+	greenMatches := GetAllWordsWithGreenLetters(guess, word, wordList)
+	yellowMatches := GetAllWordsWithYellowLetters(guess, word, wordList)
+	wordWithOut := GetAllWordsWithOutLetters(guess, word, wordList)
+	subset := findSubSet2(greenMatches, yellowMatches, wordWithOut)
+	return firstGuessFunc(subset)
 }
 
 func ShowResults2(guess string, word string) {
@@ -137,6 +223,7 @@ func CompeteLoop(word string, wordList []string) {
 		}
 		matches := GetAllWordsThatMatch(guess, word, wordList)
 		contained := GetAllWordsThatContain(guess, word, wordList)
+		// wordWithOut := GetAllWordsWithOutLetters(guess, word, wordList)
 		wordList = findSubSet(matches, contained)
 	}
 }

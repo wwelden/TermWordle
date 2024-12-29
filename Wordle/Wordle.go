@@ -9,10 +9,11 @@ import (
 )
 
 var (
-	Green  = "\033[0;102m"
-	Yellow = "\033[0;103m"
-	Red    = "\033[0;101m"
-	White  = "\033[0m"
+	Green     = "\033[0;102m"
+	Yellow    = "\033[0;103m"
+	Red       = "\033[0;101m"
+	White     = "\033[0m"
+	BlackText = "\033[30m"
 )
 
 func ReadFile() []string {
@@ -38,7 +39,6 @@ func GetGuess() string {
 		fmt.Println("Please enter a 5 letter word")
 		return GetGuess()
 	}
-
 	wordList := ReadFile()
 	isValidWord := false
 	for _, word := range wordList {
@@ -47,12 +47,10 @@ func GetGuess() string {
 			break
 		}
 	}
-
 	if !isValidWord {
 		fmt.Println("Not a valid word")
 		return GetGuess()
 	}
-
 	return guess
 }
 
@@ -81,7 +79,6 @@ func GuessContains(guess string, word string) []bool {
 }
 
 func DoesGuessMatch(guess string, word string) bool {
-	fmt.Println(guess, word)
 	return guess == word
 }
 
@@ -92,9 +89,9 @@ func ShowResults(guess string, word string) {
 	fmt.Print("\033[K")
 	for i := range rightSpots {
 		if rightSpots[i] {
-			fmt.Print(Green + strings.ToUpper(string(guess[i])) + White)
+			fmt.Print(Green + BlackText + strings.ToUpper(string(guess[i])) + White)
 		} else if rightLetters[i] {
-			fmt.Print(Yellow + strings.ToUpper(string(guess[i])) + White)
+			fmt.Print(Yellow + BlackText + strings.ToUpper(string(guess[i])) + White)
 		} else {
 			fmt.Print(White + strings.ToUpper(string(guess[i])) + White)
 		}
@@ -113,18 +110,14 @@ func TrackLetterUsage(word string) map[rune]int {
 func CheckGuessWithDuplicates(guess, word string) []string {
 	results := make([]string, len(guess))
 	letterUsage := TrackLetterUsage(word)
-
-	// First pass: Mark greens
 	for i := range guess {
 		if guess[i] == word[i] {
 			results[i] = "green"
 			letterUsage[rune(guess[i])]--
 		}
 	}
-
-	// Second pass: Mark yellows
 	for i := range guess {
-		if results[i] != "" { // Skip already marked greens
+		if results[i] != "" {
 			continue
 		}
 		if letterUsage[rune(guess[i])] > 0 {
@@ -134,7 +127,6 @@ func CheckGuessWithDuplicates(guess, word string) []string {
 			results[i] = "gray"
 		}
 	}
-
 	return results
 }
 
@@ -144,9 +136,9 @@ func ShowResultsEnhanced(guess, word string) {
 	results := CheckGuessWithDuplicates(guess, word)
 	for i, result := range results {
 		if result == "green" {
-			fmt.Print(Green + "\033[30m" + strings.ToUpper(string(guess[i])) + White)
+			fmt.Print(Green + BlackText + strings.ToUpper(string(guess[i])) + White)
 		} else if result == "yellow" {
-			fmt.Print(Yellow + "\033[30m" + strings.ToUpper(string(guess[i])) + White)
+			fmt.Print(Yellow + BlackText + strings.ToUpper(string(guess[i])) + White)
 		} else {
 			fmt.Print(White + strings.ToUpper(string(guess[i])) + White)
 		}
@@ -155,14 +147,12 @@ func ShowResultsEnhanced(guess, word string) {
 }
 
 func ShowResultsEnhancedAI(guess, word string) {
-	// fmt.Print("\033[1A\r")
-	// fmt.Print("\033[K")
 	results := CheckGuessWithDuplicates(guess, word)
 	for i, result := range results {
 		if result == "green" {
-			fmt.Print(Green + "\033[30m" + strings.ToUpper(string(guess[i])) + White)
+			fmt.Print(Green + BlackText + strings.ToUpper(string(guess[i])) + White)
 		} else if result == "yellow" {
-			fmt.Print(Yellow + "\033[30m" + strings.ToUpper(string(guess[i])) + White)
+			fmt.Print(Yellow + BlackText + strings.ToUpper(string(guess[i])) + White)
 		} else {
 			fmt.Print(White + strings.ToUpper(string(guess[i])) + White)
 		}
@@ -185,7 +175,6 @@ func PlayerPlay(word string) {
 	for i := 0; i < 6; i++ {
 		guess := strings.ToLower(GetGuess())
 		PlayerGuessNum++
-		// ShowResults(guess, word)
 		ShowResultsEnhanced(guess, word)
 		if DoesGuessMatch(guess, word) {
 			fmt.Println("You Got It!")

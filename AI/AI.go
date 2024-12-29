@@ -112,9 +112,9 @@ func ShowResults2(guess string, word string) {
 	rightLetters := Wordle.GuessContains(guess, word)
 	for i := range rightSpots {
 		if rightSpots[i] {
-			fmt.Print(Wordle.Green + strings.ToUpper(string(guess[i])) + Wordle.White)
+			fmt.Print(Wordle.Green + "\033[30m" + strings.ToUpper(string(guess[i])) + Wordle.White)
 		} else if rightLetters[i] {
-			fmt.Print(Wordle.Yellow + strings.ToUpper(string(guess[i])) + Wordle.White)
+			fmt.Print(Wordle.Yellow + "\033[30m" + strings.ToUpper(string(guess[i])) + Wordle.White)
 		} else {
 			fmt.Print(Wordle.White + strings.ToUpper(string(guess[i])) + Wordle.White)
 		}
@@ -128,7 +128,6 @@ var AIGotIt = false
 func CompeteLoop(word string, wordList []string) {
 	for i := 0; i < 6; i++ {
 		guess := Compete(word, wordList)
-		// ShowResults2(guess, word)
 		Wordle.ShowResultsEnhancedAI(guess, word)
 		AIGuessNum++
 		if Wordle.DoesGuessMatch(guess, word) {

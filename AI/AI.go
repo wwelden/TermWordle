@@ -1,13 +1,15 @@
-package main
+package AI
 
 import (
 	"fmt"
 	"math/rand"
 	"strings"
+
+	"github.com/wwelden/TermWordle/Wordle"
 )
 
 func GetContainedLetters(guess string, word string) string {
-	contains := GuessContains(guess, word)
+	contains := Wordle.GuessContains(guess, word)
 	containedLetters := ""
 	for i := range contains {
 		if contains[i] {
@@ -37,7 +39,7 @@ func GetAllWordsThatContain(guess string, word string, wordList []string) []stri
 	return matches
 }
 func GetAllWordsThatMatch(guess string, word string, wordList []string) []string {
-	letters := CheckGuess(guess, word)
+	letters := Wordle.CheckGuess(guess, word)
 	matches := []string{}
 
 	for _, testWord := range wordList {
@@ -58,7 +60,7 @@ func GetAllWordsThatMatch(guess string, word string, wordList []string) []string
 }
 
 func GetAllWordsWithOutLetters(guess string, word string, wordList []string) []string {
-	letters := CheckGuess(guess, word)
+	letters := Wordle.CheckGuess(guess, word)
 	matches := []string{}
 
 	for _, testWord := range wordList {
@@ -106,15 +108,15 @@ func Compete(word string, wordList []string) string {
 }
 
 func ShowResults2(guess string, word string) {
-	rightSpots := CheckGuess(guess, word)
-	rightLetters := GuessContains(guess, word)
+	rightSpots := Wordle.CheckGuess(guess, word)
+	rightLetters := Wordle.GuessContains(guess, word)
 	for i := range rightSpots {
 		if rightSpots[i] {
-			fmt.Print(Green + strings.ToUpper(string(guess[i])) + White)
+			fmt.Print(Wordle.Green + strings.ToUpper(string(guess[i])) + Wordle.White)
 		} else if rightLetters[i] {
-			fmt.Print(Yellow + strings.ToUpper(string(guess[i])) + White)
+			fmt.Print(Wordle.Yellow + strings.ToUpper(string(guess[i])) + Wordle.White)
 		} else {
-			fmt.Print(White + strings.ToUpper(string(guess[i])) + White)
+			fmt.Print(Wordle.White + strings.ToUpper(string(guess[i])) + Wordle.White)
 		}
 	}
 	fmt.Println()
@@ -127,9 +129,9 @@ func CompeteLoop(word string, wordList []string) {
 	for i := 0; i < 6; i++ {
 		guess := Compete(word, wordList)
 		// ShowResults2(guess, word)
-		ShowResultsEnhancedAI(guess, word)
+		Wordle.ShowResultsEnhancedAI(guess, word)
 		AIGuessNum++
-		if DoesGuessMatch(guess, word) {
+		if Wordle.DoesGuessMatch(guess, word) {
 			fmt.Println("AI Got It!")
 			AIGotIt = true
 			break
@@ -148,6 +150,6 @@ func AIPlay(word string) {
 	// fmt.Println("    \\_/\\_/ \\___/|_|  \\__,_|_|\\___|")
 	// fmt.Println("-----------------------------------")
 	fmt.Println("AI's turn")
-	wordList := ReadFile()
+	wordList := Wordle.ReadFile()
 	CompeteLoop(word, wordList)
 }

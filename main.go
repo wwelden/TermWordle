@@ -3,16 +3,19 @@ package main
 import (
 	"fmt"
 	"strings"
+
+	"github.com/wwelden/TermWordle/AI"
+	"github.com/wwelden/TermWordle/Wordle"
 )
 
 func CanYouBeatTheAI(word string) {
-	PlayerPlay(word)
-	AIPlay(word)
-	fmt.Println("Player guesses:", playerGuessNum)
-	fmt.Println("AI guesses:", AIGuessNum)
-	if playerGuessNum > AIGuessNum || (AIGotIt && !playerGotIt) {
+	Wordle.PlayerPlay(word)
+	AI.AIPlay(word)
+	fmt.Println("Player guesses:", Wordle.PlayerGuessNum)
+	fmt.Println("AI guesses:", AI.AIGuessNum)
+	if Wordle.PlayerGuessNum > AI.AIGuessNum || (AI.AIGotIt && !Wordle.PlayerGotIt) {
 		fmt.Println("AI wins!")
-	} else if playerGuessNum == AIGuessNum {
+	} else if Wordle.PlayerGotIt == AI.AIGotIt {
 		fmt.Println("You tied!")
 	} else {
 		fmt.Println("Player wins!")
@@ -20,6 +23,6 @@ func CanYouBeatTheAI(word string) {
 }
 
 func main() {
-	word := strings.ToLower(GetWord())
+	word := strings.ToLower(Wordle.GetWord())
 	CanYouBeatTheAI(word)
 }

@@ -83,6 +83,7 @@ func GetAllWordsWithOutLetters(guess string, word string, wordList []string) []s
 	}
 	return matches
 }
+
 func GetLettersInWord(guess string, word string) string {
 	letters := ""
 	used := make(map[rune]bool) // Track letters already added
@@ -94,13 +95,14 @@ func GetLettersInWord(guess string, word string) string {
 	}
 	return letters
 }
+
 func GetYellowLetters(guess string, word string) string {
 	letters := ""
 	used := make(map[rune]bool) // Track letters already added
 
 	for _, letter := range guess {
 		// If the letter is in the word and not already added to the result
-		if strings.Contains(word, string(letter)) && !used[letter] {
+		if strings.Contains(word, string(letter)) {
 			letters += string(letter)
 			used[letter] = true
 		}
@@ -163,7 +165,88 @@ func findSubSet(matches []string, contained []string) []string {
 	return subset
 }
 
-func findSubSet2(matches []string, contained []string, wordWithOut []string) []string {
+//get all the word with letters in the right places
+//get all the words that contain the letters in the wrong places
+//get all the words that do not contains the letters the word does not contain
+//find all of the words that are in all 3 lists
+
+func getRightPlaces(guess string, answer string) string {
+	ret := ""
+	for i, letter := range answer {
+		if letter == rune(guess[i]) {
+			ret += string(letter)
+		} else {
+			ret += "-"
+		}
+	}
+	return ret
+}
+
+func rightPlaces(guess string, answer string, wordlist []string) []string {
+	results := []string{}
+	greenPos := getRightPlaces(guess, answer)
+	for _, testWord := range wordlist {
+		testGreen := getRightPlaces(testWord, answer)
+		for i := 0; i < 5; i++ {
+			if testGreen[i] == greenPos[i] || greenPos[i] == '-' {
+				results = append(results, testWord)
+			}
+		}
+	}
+	return results
+}
+
+func getWrongPlaces(guess string, answer string) string {
+	ret := ""
+	for _, letter := range guess {
+		if strings.Contains(answer, string(letter)) {
+			ret += string(letter)
+
+		}
+	}
+	return ret
+}
+func hasLetters(input string, word string) bool {
+	for _, letter := range input {
+		if !strings.Contains(word, string(letter)) {
+			return false
+		}
+	}
+	return true
+}
+
+func wrongPlaces(guess string, answer string, wordlist []string) []string {
+	results := []string{}
+	mustContain := getWrongPlaces(guess, answer)
+	for _, testWord := range wordlist {
+		if hasLetters(mustContain, testWord) {
+			results = append(results, testWord)
+		}
+	}
+	return results
+}
+func notHaveLetters(guess string, answer string) string {
+	ret := ""
+	for _, letter := range guess {
+		if !strings.Contains(answer, string(letter)) {
+			ret += string(letter)
+		}
+	}
+	return ret
+}
+
+func getWordsWithoutLetters(guess string, answer string, wordlist []string) []string {
+	results := []string{}
+	input := notHaveLetters(guess, answer)
+	for _, word := range wordlist {
+		if !hasLetters(input, word) {
+			results = append(results, word)
+		}
+	}
+	return results
+}
+
+func subSetEnhanced(matches []string, contained []string, wordWithOut []string) []string {
 	subset := []string{}
 	for _, match := range matches {
 		inContained := false
@@ -207,10 +290,10 @@ func Compete(word string, wordList []string) string {
 }
 func CompeteEnhanced(word string, wordList []string, firstGuessFunc func([]string) string) string {
 	guess := firstGuessFunc(wordList) // Use the injected function
-	greenMatches := GetAllWordsWithGreenLetters(guess, word, wordList)
-	yellowMatches := GetAllWordsWithYellowLetters(guess, word, wordList)
-	wordWithOut := GetAllWordsWithOutLetters(guess, word, wordList)
-	subset := findSubSet2(greenMatches, yellowMatches, wordWithOut)
+	greenMatches := rightPlaces(guess, word, wordList)
+	yellowMatches := wrongPlaces(guess, word, wordList)
+	wordWithOut := getWordsWithoutLetters(guess, word, wordList)
+	subset := subSetEnhanced(greenMatches, yellowMatches, wordWithOut)
 	return firstGuessFunc(subset)
 }
 

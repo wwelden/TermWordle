@@ -140,16 +140,6 @@ func TestFirstGuess(t *testing.T) {
 	}
 }
 
-func TestFindSubSet2(t *testing.T) {
-	matches := []string{"apple", "apply", "apples", "applesauce"}
-	contained := []string{"apple", "apples"}
-	wordWithOut := []string{"apple"}
-	subset := findSubSet2(matches, contained, wordWithOut)
-	if len(subset) != 1 {
-		t.Errorf("FindSubSet2 returned %d subset, expected 1", len(subset))
-	}
-}
-
 func TestWordHasLetter(t *testing.T) {
 	word := "apple"
 	letter := "a"
@@ -247,39 +237,44 @@ func TestGetLettersInWord(t *testing.T) {
 
 func TestGetAllWordsWithYellowLetters(t *testing.T) {
 	tests := []struct {
+		name     string
 		guess    string
 		word     string
 		wordList []string
 		expected []string
 	}{
 		{
+			name:     "P E A",
 			guess:    "apple",
 			word:     "peach",
-			wordList: []string{"peach", "grape", "plane", "apple"},
-			expected: []string{"peach", "grape", "plane"}, // "p", "e", "a" are yellow letters
+			wordList: []string{"peach", "grape", "plane", "apple", "brick"},
+			expected: []string{"peach", "grape", "plane", "apple"}, // "p", "e", "a" are yellow letters
 		},
 		{
+			name:     "T A L",
 			guess:    "table",
 			word:     "plant",
 			wordList: []string{"plant", "plate", "blame", "table"},
-			expected: []string{"plant", "plate", "blame"}, // "t", "a", "l" are yellow letters
+			expected: []string{"plant", "plate", "table"}, // "t", "a", "l" are yellow letters
 		},
 		{
+			name:     "S T O N E",
 			guess:    "stone",
 			word:     "notes",
-			wordList: []string{"notes", "tones", "stone", "nest"},
-			expected: []string{"notes", "tones", "nest"}, // "s", "t", "o", "n", "e" are yellow letters
+			wordList: []string{"notes", "tones", "stone", "nests"},
+			expected: []string{"notes", "tones", "stone"}, // "s", "t", "o", "n", "e" are yellow letters
 		},
 		{
+			name:     "All Letters are yellow",
 			guess:    "apple",
 			word:     "apple",
 			wordList: []string{"apple", "ample", "apply"},
-			expected: []string{"apple", "ample", "apply"}, // All letters are yellow
+			expected: []string{"apple", "ample"}, // All letters are yellow
 		},
 	}
 
 	for _, test := range tests {
-		t.Run(fmt.Sprintf("guess=%s, word=%s", test.guess, test.word), func(t *testing.T) {
+		t.Run(fmt.Sprintf(test.name), func(t *testing.T) {
 			matches := GetAllWordsWithYellowLetters(test.guess, test.word, test.wordList)
 
 			// Validate the results
@@ -296,7 +291,7 @@ func TestGetAllWordsWithYellowLetters(t *testing.T) {
 					}
 				}
 				if !found {
-					t.Errorf("Expected word %s not found in matches: %v", expectedWord, matches)
+					t.Errorf("Expected word %s not found in matches: %v", test.expected, matches)
 				}
 			}
 		})
@@ -331,6 +326,466 @@ func TestCompete(t *testing.T) {
 	guess := Compete(word, wordList)
 	if len(guess) != 5 {
 		t.Errorf("Compete returned a guess with length %d, expected 5", len(guess))
+	}
+}
+
+// func TestFindSubSet2(t *testing.T) {
+// 	matches := []string{"apple", "apply", "apples", "applesauce"}
+// 	contained := []string{"apple", "apples"}
+// 	wordWithOut := []string{"apple"}
+// 	subset := findSubSet2(matches, contained, wordWithOut)
+// 	if len(subset) != 1 {
+// 		t.Errorf("FindSubSet2 returned %d subset, expected 1", len(subset))
+// 	}
+// }
+
+func TestGetRightPlaces(t *testing.T) {
+	tests := []struct {
+		name     string
+		guess    string
+		answer   string
+		expected string
+	}{
+		{
+			name:     "test 1",
+			guess:    "plant",
+			answer:   "pleat",
+			expected: "pl--t",
+		},
+		{
+			name:     "test 2",
+			guess:    "apple",
+			answer:   "spade",
+			expected: "-p--e",
+		},
+		{
+			name:     "test 3",
+			guess:    "optic",
+			answer:   "spoil",
+			expected: "-p-i-",
+		},
+		{
+			name:     "test 4",
+			guess:    "apple",
+			answer:   "xxxxx",
+			expected: "-----",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			results := getRightPlaces(test.guess, test.answer)
+
+			for _, expectedWord := range test.expected {
+				found := false
+				for _, result := range results {
+					if result == expectedWord {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected word %v was not in filtered results: %v", expectedWord, results)
+				}
+			}
+		})
+
+	}
+}
+
+func TestRightPlaces(t *testing.T) {
+	tests := []struct {
+		name     string
+		guess    string
+		answer   string
+		wordlist []string
+		expected []string
+	}{
+		{
+			name:     "test 1",
+			guess:    "plant",
+			answer:   "pleat",
+			wordlist: []string{"platt", "plast", "pluot", "plait", "pleat", "plant", "abuzz", "abyss", "above", "alamo", "album"},
+			expected: []string{"platt", "plast", "pluot", "plait", "pleat", "plant"},
+		},
+		{
+			name:     "test 2",
+			guess:    "apple",
+			answer:   "spade",
+			wordlist: []string{"apple", "spade", "spare", "apply", "april"},
+			expected: []string{"apple", "spade", "spare"},
+		},
+		{
+			name:     "test 3",
+			guess:    "brick",
+			answer:   "break",
+			wordlist: []string{"brick", "brink", "brake", "break", "bread", "beach", "bench"},
+			expected: []string{"brick", "brink", "brake", "break", "bread"},
+		},
+		{
+			name:     "test 4",
+			guess:    "stain",
+			answer:   "steam",
+			wordlist: []string{"stain", "stand", "stamp", "steam", "steal", "stack", "start"},
+			expected: []string{"stain", "stand", "stamp", "steam", "steal"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			results := rightPlaces(test.guess, test.answer, test.wordlist)
+
+			for _, expectedWord := range test.expected {
+				found := false
+				for _, result := range results {
+					if result == expectedWord {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected word %v was not in filtered results: %v", expectedWord, results)
+				}
+			}
+		})
+
+	}
+}
+
+func TestGetWrongPlaces(t *testing.T) {
+	tests := []struct {
+		name     string
+		guess    string
+		answer   string
+		expected string
+	}{
+		{
+			name:     "test 1",
+			guess:    "plant",
+			answer:   "pleat",
+			expected: "plat",
+		},
+		{
+			name:     "test 2",
+			guess:    "apple",
+			answer:   "spade",
+			expected: "ape",
+		},
+		{
+			name:     "test 3",
+			guess:    "optic",
+			answer:   "spoil",
+			expected: "poi",
+		},
+		{
+			name:     "test 4",
+			guess:    "apple",
+			answer:   "xxxxx",
+			expected: "",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			results := getWrongPlaces(test.guess, test.answer)
+
+			for _, expectedWord := range test.expected {
+				found := false
+				for _, result := range results {
+					if result == expectedWord {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected word %v was not in filtered results: %v", expectedWord, results)
+				}
+			}
+		})
+
+	}
+}
+
+func TestHasLetters(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		word     string
+		expected bool
+	}{
+		{
+			name:     "test 1",
+			input:    "elat",
+			word:     "pleat",
+			expected: true,
+		},
+		{
+			name:     "test 2",
+			input:    "eds",
+			word:     "spade",
+			expected: true,
+		},
+		{
+			name:     "test 3",
+			input:    "oil",
+			word:     "spoil",
+			expected: true,
+		},
+		{
+			name:     "test 4",
+			input:    "apple",
+			word:     "xxxxx",
+			expected: false,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			results := hasLetters(test.input, test.word)
+
+			if results != test.expected {
+				t.Errorf("Expected word %v was not in filtered results: %v", test.expected, results)
+			}
+		})
+
+	}
+}
+
+func TestWrongPlaces(t *testing.T) {
+	tests := []struct {
+		name     string
+		guess    string
+		answer   string
+		wordlist []string
+		expected []string
+	}{
+		{
+			name:     "test 1 - letter in wrong position",
+			guess:    "plant",
+			answer:   "pleat",
+			wordlist: []string{"platt", "plast", "pluot", "plait", "pleat", "plant"},
+			expected: []string{"pleat"}, // Only pleat has 'a' in wrong position
+		},
+		{
+			name:     "test 2 - multiple letters in wrong positions",
+			guess:    "apple",
+			answer:   "spade",
+			wordlist: []string{"apple", "spade", "spare", "apply", "april"},
+			expected: []string{"spade"}, // Only spade has both 'a' and 'p' in wrong positions
+		},
+		{
+			name:     "test 3 - no letters in wrong positions",
+			guess:    "brick",
+			answer:   "pleat",
+			wordlist: []string{"pleat", "plant", "spare", "brick"},
+			expected: []string{}, // No words have letters in wrong positions
+		},
+		{
+			name:     "test 4 - repeated letters",
+			guess:    "speed",
+			answer:   "spade",
+			wordlist: []string{"speed", "spade", "shade", "space"},
+			expected: []string{"spade"}, // Only spade has 'e' in wrong position
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			results := wrongPlaces(test.guess, test.answer, test.wordlist)
+
+			for _, expectedWord := range test.expected {
+				found := false
+				for _, result := range results {
+					if result == expectedWord {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected word %v was not in filtered results: %v", expectedWord, results)
+				}
+			}
+		})
+
+	}
+}
+
+func TestNotHaveLetters(t *testing.T) {
+	tests := []struct {
+		name     string
+		guess    string
+		answer   string
+		expected string
+	}{
+		{
+			name:     "test 1",
+			guess:    "plant",
+			answer:   "pleat",
+			expected: "n",
+		},
+		{
+			name:     "test 2",
+			guess:    "apple",
+			answer:   "spade",
+			expected: "l",
+		},
+		{
+			name:     "test 3",
+			guess:    "optic",
+			answer:   "spoil",
+			expected: "tc",
+		},
+		{
+			name:     "test 4",
+			guess:    "apple",
+			answer:   "xxxxx",
+			expected: "apple",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			results := notHaveLetters(test.guess, test.answer)
+
+			for _, expectedWord := range test.expected {
+				found := false
+				for _, result := range results {
+					if result == expectedWord {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected word %v was not in filtered results: %v", expectedWord, results)
+				}
+			}
+		})
+
+	}
+}
+
+func TestGetWordsWithoutLetters(t *testing.T) {
+	tests := []struct {
+		name     string
+		guess    string
+		answer   string
+		wordlist []string
+		expected []string
+	}{
+		{
+			name:     "test 1 - filter words with n",
+			guess:    "plant",
+			answer:   "pleat",
+			wordlist: []string{"platt", "plast", "pluot", "plait", "pleat", "plant"},
+			expected: []string{"pleat"}, // Only word without 'n'
+		},
+		{
+			name:     "test 2 - filter words with l",
+			guess:    "apple",
+			answer:   "spade",
+			wordlist: []string{"apple", "spade", "spare", "apply", "april"},
+			expected: []string{"spade"}, // Only word without 'l'
+		},
+		{
+			name:     "test 3 - filter words with t,c",
+			guess:    "optic",
+			answer:   "spoil",
+			wordlist: []string{"trick", "spoil", "spear", "topic"},
+			expected: []string{"spoil"}, // Only word without 't' and 'c'
+		},
+		{
+			name:     "test 4 - filter all letters",
+			guess:    "apple",
+			answer:   "xxxxx",
+			wordlist: []string{"apple", "bring", "crown", "drink"},
+			expected: []string{"bring", "crown", "drink"}, // Words without any letters from 'apple'
+		},
+		{
+			name:     "test 5 - no common letters",
+			guess:    "brick",
+			answer:   "apple",
+			wordlist: []string{"grape", "brick", "table", "apple", "peach"},
+			expected: []string{"apple", "peach"}, // Only words with no letters in common with "brick"
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			results := getWordsWithoutLetters(test.guess, test.answer, test.wordlist)
+
+			for _, expectedWord := range test.expected {
+				found := false
+				for _, result := range results {
+					if result == expectedWord {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected word %v was not in filtered results: %v", expectedWord, results)
+				}
+			}
+		})
+
+	}
+}
+
+func TestSubSetEnhanced(t *testing.T) {
+	tests := []struct {
+		name           string
+		greenMatches   []string
+		yellowMatches  []string
+		wordWithOut    []string
+		expected       []string // Expected filtered words at the end of the test
+		expectedLength int
+	}{
+		{
+			name:           "All matches overlap",
+			greenMatches:   []string{"plant", "pleat", "plait"},
+			yellowMatches:  []string{"plant", "pleat", "plait", "plain"},
+			wordWithOut:    []string{"plant", "pleat", "plait", "pluot"},
+			expected:       []string{"plant", "pleat", "plait"},
+			expectedLength: 3,
+		},
+		{
+			name:           "No matches overlap",
+			greenMatches:   []string{"plant", "pleat"},
+			yellowMatches:  []string{"spare", "spade"},
+			wordWithOut:    []string{"brick", "break"},
+			expected:       []string{},
+			expectedLength: 0,
+		},
+		{
+			name:           "Partial overlap",
+			greenMatches:   []string{"spare", "spade", "space"},
+			yellowMatches:  []string{"spade", "space", "speak"},
+			wordWithOut:    []string{"space", "spade", "spark"},
+			expected:       []string{"spade", "space"},
+			expectedLength: 2,
+		},
+		{
+			name:           "Multiple matches from larger lists",
+			greenMatches:   []string{"plant", "pleat", "plait", "plain", "plate", "place", "plane", "plank", "plaza", "plage"},
+			yellowMatches:  []string{"spare", "spade", "space", "speak", "spear", "pleat", "plait", "plain", "plate", "place"},
+			wordWithOut:    []string{"brick", "break", "bread", "pleat", "plait", "plain", "plate", "place", "bring", "broad"},
+			expected:       []string{"pleat", "plait", "plain", "plate", "place"},
+			expectedLength: 5,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			results := subSetEnhanced(test.greenMatches, test.yellowMatches, test.wordWithOut)
+
+			if len(results) != test.expectedLength {
+				t.Errorf("FindSubSet2 returned %d subset, expected 1", len(results)) // test not finished
+			}
+			for _, expectedWord := range test.expected {
+				found := false
+				for _, result := range results {
+					if result == expectedWord {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected word %s was not in filtered results: %v", expectedWord, results)
+				}
+			}
+		})
+
 	}
 }
 

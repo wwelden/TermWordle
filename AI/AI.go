@@ -363,7 +363,7 @@ var AIGotIt = false
 
 func CompeteLoop(word string, wordList []string) {
 	for i := 0; i < 6; i++ {
-		guess := Compete(word, wordList)
+		guess := CompeteEnhanced(word, wordList, FirstGuess)
 		Wordle.ShowResultsEnhancedAI(guess, word)
 		AIGuessNum++
 		if Wordle.DoesGuessMatch(guess, word) {
@@ -371,10 +371,10 @@ func CompeteLoop(word string, wordList []string) {
 			AIGotIt = true
 			break
 		}
-		matches := GetAllWordsThatMatch(guess, word, wordList)
-		contained := GetAllWordsThatContain(guess, word, wordList)
-		// wordWithOut := GetAllWordsWithOutLetters(guess, word, wordList)
-		wordList = findSubSet(matches, contained)
+		matches := rightPlaces(guess, word, wordList)
+		contained := wrongPlaces(guess, word, wordList)
+		wordWithOut := getWordsWithoutLetters(guess, word, wordList)
+		wordList = SubSetEmptyLists(matches, contained, wordWithOut)
 	}
 }
 

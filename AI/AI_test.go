@@ -1,7 +1,6 @@
 package AI
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/wwelden/TermWordle/Wordle"
@@ -274,7 +273,7 @@ func TestGetAllWordsWithYellowLetters(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		t.Run(fmt.Sprintf(test.name), func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			matches := GetAllWordsWithYellowLetters(test.guess, test.word, test.wordList)
 
 			// Validate the results
@@ -329,15 +328,7 @@ func TestCompete(t *testing.T) {
 	}
 }
 
-// func TestFindSubSet2(t *testing.T) {
-// 	matches := []string{"apple", "apply", "apples", "applesauce"}
-// 	contained := []string{"apple", "apples"}
-// 	wordWithOut := []string{"apple"}
-// 	subset := findSubSet2(matches, contained, wordWithOut)
-// 	if len(subset) != 1 {
-// 		t.Errorf("FindSubSet2 returned %d subset, expected 1", len(subset))
-// 	}
-// }
+//
 
 func TestGetRightPlaces(t *testing.T) {
 	tests := []struct {
@@ -854,6 +845,14 @@ func TestSubSetEmptyLists(t *testing.T) {
 			expected:       []string{"spare", "spade", "space"},
 			expectedLength: 3,
 		},
+		{
+			name:           "All empty lists",
+			greenMatches:   []string{},
+			yellowMatches:  []string{},
+			wordWithOut:    []string{},
+			expected:       []string{},
+			expectedLength: 0,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -922,6 +921,13 @@ func TestCompeteEnhanced(t *testing.T) {
 			firstGuess: "grape", // First word in the list
 			expected:   "apple", // Should still find the target word
 		},
+		// {
+		// 	name:       "Multiple words with no matches",
+		// 	word:       "apple",
+		// 	wordList:   []string{"elder", "bowed", "boned", "donut", "pound", "hundo"},
+		// 	firstGuess: "elder",
+		// 	expected:   "boned", // Should find the first word that matches
+		// },
 	}
 
 	for _, test := range tests {

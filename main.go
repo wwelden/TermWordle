@@ -21,8 +21,13 @@ func CanYouBeatTheAI(word string) {
 		fmt.Println("Player wins!")
 	}
 }
+func RunAI() {
+	word := strings.ToLower(Wordle.GetWord())
+	AI.AIPlay(word)
+}
 
 func main() {
-	word := strings.ToLower(Wordle.GetWord())
-	CanYouBeatTheAI(word)
+	// word := strings.ToLower(Wordle.GetWord())
+	// CanYouBeatTheAI(word)
+	RunAI()
 }

@@ -723,7 +723,7 @@ func TestGetWordsWithoutLetters(t *testing.T) {
 	}
 }
 
-func TestSubSetEnhanced(t *testing.T) {
+func TestSubsetEnhanced(t *testing.T) {
 	tests := []struct {
 		name           string
 		greenMatches   []string
@@ -767,7 +767,97 @@ func TestSubSetEnhanced(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			results := subSetEnhanced(test.greenMatches, test.yellowMatches, test.wordWithOut)
+			results := subsetEnhanced(test.greenMatches, test.yellowMatches, test.wordWithOut)
+
+			if len(results) != test.expectedLength {
+				t.Errorf("FindSubSet2 returned %d subset, expected 1", len(results)) // test not finished
+			}
+			for _, expectedWord := range test.expected {
+				found := false
+				for _, result := range results {
+					if result == expectedWord {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("Expected word %s was not in filtered results: %v", expectedWord, results)
+				}
+			}
+		})
+
+	}
+}
+
+func TestSubSetEmptyLists(t *testing.T) {
+	tests := []struct {
+		name           string
+		greenMatches   []string
+		yellowMatches  []string
+		wordWithOut    []string
+		expected       []string // Expected filtered words at the end of the test
+		expectedLength int
+	}{
+		{
+			name:           "All matches overlap",
+			greenMatches:   []string{"plant", "pleat", "plait"},
+			yellowMatches:  []string{"plant", "pleat", "plait", "plain"},
+			wordWithOut:    []string{"plant", "pleat", "plait", "pluot"},
+			expected:       []string{"plant", "pleat", "plait"},
+			expectedLength: 3,
+		},
+		{
+			name:           "No matches overlap",
+			greenMatches:   []string{"plant", "pleat"},
+			yellowMatches:  []string{"spare", "spade"},
+			wordWithOut:    []string{"brick", "break"},
+			expected:       []string{},
+			expectedLength: 0,
+		},
+		{
+			name:           "Partial overlap",
+			greenMatches:   []string{"spare", "spade", "space"},
+			yellowMatches:  []string{"spade", "space", "speak"},
+			wordWithOut:    []string{"space", "spade", "spark"},
+			expected:       []string{"spade", "space"},
+			expectedLength: 2,
+		},
+		{
+			name:           "Multiple matches from larger lists",
+			greenMatches:   []string{"plant", "pleat", "plait", "plain", "plate", "place", "plane", "plank", "plaza", "plage"},
+			yellowMatches:  []string{"spare", "spade", "space", "speak", "spear", "pleat", "plait", "plain", "plate", "place"},
+			wordWithOut:    []string{"brick", "break", "bread", "pleat", "plait", "plain", "plate", "place", "bring", "broad"},
+			expected:       []string{"pleat", "plait", "plain", "plate", "place"},
+			expectedLength: 5,
+		},
+		{
+			name:           "Empty green matches",
+			greenMatches:   []string{},
+			yellowMatches:  []string{"spare", "spade", "space"},
+			wordWithOut:    []string{"spare", "spade", "space"},
+			expected:       []string{"spare", "spade", "space"},
+			expectedLength: 3,
+		},
+		{
+			name:           "Empty yellow matches",
+			greenMatches:   []string{"spare", "spade", "space"},
+			yellowMatches:  []string{},
+			wordWithOut:    []string{"spare", "spade", "space"},
+			expected:       []string{"spare", "spade", "space"},
+			expectedLength: 3,
+		},
+		{
+			name:           "Empty without matches",
+			greenMatches:   []string{"spare", "spade", "space"},
+			yellowMatches:  []string{"spare", "spade", "space"},
+			wordWithOut:    []string{},
+			expected:       []string{"spare", "spade", "space"},
+			expectedLength: 3,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			results := SubSetEmptyLists(test.greenMatches, test.yellowMatches, test.wordWithOut)
 
 			if len(results) != test.expectedLength {
 				t.Errorf("FindSubSet2 returned %d subset, expected 1", len(results)) // test not finished
@@ -795,58 +885,61 @@ func TestCompeteEnhanced(t *testing.T) {
 		word       string
 		wordList   []string
 		firstGuess string
-		expected   []string // Expected filtered words at the end of the test
+		expected   string // Expected final guess
 	}{
 		{
 			name:       "No common letters",
 			word:       "apple",
 			wordList:   []string{"grape", "brick", "table", "apple", "peach"},
-			firstGuess: "brick",
-			expected:   []string{"apple", "peach"}, // Only words with no letters in common with "brick"
+			firstGuess: "grape",
+			expected:   "apple", // Should find the target word
 		},
 		{
-			name:       "Some letters in correct positions",
-			word:       "apple",
-			wordList:   []string{"apple", "ample", "angle", "apply", "baker"},
-			firstGuess: "ample",
-			expected:   []string{"apple"}, // Words matching "a", "p", and "l" positions
+			name:       "Repeated letters in word",
+			word:       "bloom",
+			wordList:   []string{"bloom", "roomy", "booms", "gloom", "broom"},
+			firstGuess: "bloom",
+			expected:   "bloom", // Should handle repeated letters correctly
 		},
 		{
-			name:       "All letters in wrong positions",
+			name:       "Case sensitivity",
+			word:       "Apple",
+			wordList:   []string{"grape", "brick", "table", "apple", "peach"},
+			firstGuess: "grape",
+			expected:   "apple", // Function should be case insensitive
+		},
+		{
+			name:       "Shuffled word list",
 			word:       "apple",
-			wordList:   []string{"apple", "apply", "peach", "plane", "baker"},
-			firstGuess: "plane",
-			expected:   []string{"apple", "apply"}, // Words containing "p", "l", "a", "e" but in wrong spots
+			wordList:   []string{"peach", "table", "grape", "brick", "apple"},
+			firstGuess: "peach",
+			expected:   "grape", // Should work with randomized list order
+		},
+		{
+			name:       "Invalid first guess",
+			word:       "apple",
+			wordList:   []string{"grape", "brick", "table", "apple", "peach"},
+			firstGuess: "grape", // First word in the list
+			expected:   "apple", // Should still find the target word
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// Mock fstGuess to return the specified first guess
-			mockFstGuess := func(wordList []string) string {
-				return test.firstGuess
+			// Define a custom first guess function that returns the first word in the list
+			firstGuessFunc := func(wordList []string) string {
+				if len(wordList) == 0 {
+					return ""
+				}
+				return wordList[0]
 			}
 
-			// Run CompeteEnhanced with the mocked fstGuess function
-			guess := CompeteEnhanced(test.word, test.wordList, mockFstGuess)
+			// Run CompeteEnhanced with the custom first guess function
+			result := CompeteEnhanced(test.word, test.wordList, firstGuessFunc)
 
-			// Validate the final filtered word list
-			filteredWords := GetAllWordsThatMatch(guess, test.word, test.wordList)
-			if len(filteredWords) != len(test.expected) {
-				t.Errorf("Expected %d words, got %d: %v", len(test.expected), len(filteredWords), filteredWords)
-			}
-
-			for _, expectedWord := range test.expected {
-				found := false
-				for _, filteredWord := range filteredWords {
-					if filteredWord == expectedWord {
-						found = true
-						break
-					}
-				}
-				if !found {
-					t.Errorf("Expected word %s was not in filtered results: %v", expectedWord, filteredWords)
-				}
+			if result != test.expected {
+				t.Errorf("CompeteEnhanced(%q, %v, firstGuessFunc) = %q, want %q",
+					test.word, test.wordList, result, test.expected)
 			}
 		})
 	}

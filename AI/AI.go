@@ -245,8 +245,43 @@ func getWordsWithoutLetters(guess string, answer string, wordlist []string) []st
 	}
 	return results
 }
+func SubSetEmptyLists(input1 []string, input2 []string, input3 []string) []string {
+	useInput1 := len(input1) > 0
+	useInput2 := len(input2) > 0
+	useInput3 := len(input3) > 0
+	switch {
+	case useInput1 && useInput2 && useInput3:
+		return subsetEnhanced(input1, input2, input3)
+	case useInput1 && useInput2:
+		return subset(input1, input2)
+	case useInput1 && useInput3:
+		return subset(input1, input3)
+	case useInput2 && useInput3:
+		return subset(input2, input3)
+	case useInput1:
+		return input1
+	case useInput2:
+		return input2
+	case useInput3:
+		return input3
+	default:
+		return []string{}
+	}
+}
 
-func subSetEnhanced(matches []string, contained []string, wordWithOut []string) []string {
+func subset(input1 []string, input2 []string) []string {
+	subset := []string{}
+	for _, word1 := range input1 {
+		for _, word2 := range input2 {
+			if word1 == word2 {
+				subset = append(subset, word2)
+			}
+		}
+	}
+	return subset
+}
+
+func subsetEnhanced(matches []string, contained []string, wordWithOut []string) []string {
 	subset := []string{}
 	for _, match := range matches {
 		inContained := false
@@ -288,12 +323,23 @@ func Compete(word string, wordList []string) string {
 	// subset2 := findSubSet2(matches, contained, wordWithOut)
 	return FirstGuess(subset)
 }
+
 func CompeteEnhanced(word string, wordList []string, firstGuessFunc func([]string) string) string {
 	guess := firstGuessFunc(wordList) // Use the injected function
+	// if guess != word {
+	// 	// Create a new slice without the guess word
+	// 	filteredList := make([]string, 0, len(wordList))
+	// 	for _, w := range wordList {
+	// 		if w != guess {
+	// 			filteredList = append(filteredList, w)
+	// 		}
+	// 	}
+	// 	wordList = filteredList
+	// }
 	greenMatches := rightPlaces(guess, word, wordList)
 	yellowMatches := wrongPlaces(guess, word, wordList)
 	wordWithOut := getWordsWithoutLetters(guess, word, wordList)
-	subset := subSetEnhanced(greenMatches, yellowMatches, wordWithOut)
+	subset := SubSetEmptyLists(greenMatches, yellowMatches, wordWithOut)
 	return firstGuessFunc(subset)
 }
 

@@ -336,8 +336,8 @@ func CompeteEnhanced(word string, wordList []string, firstGuessFunc func([]strin
 	// 	}
 	// 	wordList = filteredList
 	// }
-	greenMatches := rightPlaces(guess, word, wordList)
-	yellowMatches := wrongPlaces(guess, word, wordList)
+	greenMatches := GetAllWordsThatContain(guess, word, wordList)
+	yellowMatches := GetAllWordsThatMatch(guess, word, wordList)
 	wordWithOut := getWordsWithoutLetters(guess, word, wordList)
 	subset := SubSetEmptyLists(greenMatches, yellowMatches, wordWithOut)
 	return firstGuessFunc(subset)
@@ -371,8 +371,8 @@ func CompeteLoop(word string, wordList []string) {
 			AIGotIt = true
 			break
 		}
-		matches := rightPlaces(guess, word, wordList)
-		contained := wrongPlaces(guess, word, wordList)
+		matches := GetAllWordsThatContain(guess, word, wordList)
+		contained := GetAllWordsThatMatch(guess, word, wordList)
 		wordWithOut := getWordsWithoutLetters(guess, word, wordList)
 		wordList = SubSetEmptyLists(matches, contained, wordWithOut)
 	}

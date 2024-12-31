@@ -328,8 +328,6 @@ func TestCompete(t *testing.T) {
 	}
 }
 
-//
-
 func TestGetRightPlaces(t *testing.T) {
 	tests := []struct {
 		name     string

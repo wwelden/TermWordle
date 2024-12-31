@@ -27,7 +27,7 @@ func RunAI() {
 }
 
 func main() {
-	// word := strings.ToLower(Wordle.GetWord())
-	// CanYouBeatTheAI(word)
-	RunAI()
+	word := strings.ToLower(Wordle.GetWord())
+	CanYouBeatTheAI(word)
+	// RunAI()
 }

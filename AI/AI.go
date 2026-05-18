@@ -314,6 +314,44 @@ func FirstGuess(wordList []string) string {
 	return wordList[randomIndex]
 }
 
+// filterCandidates narrows `wordList` to words consistent with the
+// green/yellow/gray feedback that would result from guessing `guess`
+// against `answer`. A candidate is consistent iff guessing `guess`
+// against that candidate would produce the same feedback (this is the
+// canonical Wordle solver filter — it handles duplicate letters and
+// yellow-letter position constraints correctly).
+//
+// Returns the unfiltered list if the constraints would eliminate
+// everything (defensive — should not happen with a correct filter).
+func filterCandidates(guess string, answer string, wordList []string) []string {
+	target := Wordle.CheckGuessWithDuplicates(guess, answer)
+	filtered := make([]string, 0, len(wordList))
+	for _, candidate := range wordList {
+		if len(candidate) != len(guess) {
+			continue
+		}
+		if feedbackEqual(target, Wordle.CheckGuessWithDuplicates(guess, candidate)) {
+			filtered = append(filtered, candidate)
+		}
+	}
+	if len(filtered) == 0 {
+		return wordList
+	}
+	return filtered
+}
+
+func feedbackEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func Compete(word string, wordList []string) string {
 	guess := FirstGuess(wordList)
 	matches := GetAllWordsThatMatch(guess, word, wordList)
@@ -326,20 +364,10 @@ func Compete(word string, wordList []string) string {
 
 func CompeteEnhanced(word string, wordList []string, firstGuessFunc func([]string) string) string {
 	guess := firstGuessFunc(wordList) // Use the injected function
-	// if guess != word {
-	// 	// Create a new slice without the guess word
-	// 	filteredList := make([]string, 0, len(wordList))
-	// 	for _, w := range wordList {
-	// 		if w != guess {
-	// 			filteredList = append(filteredList, w)
-	// 		}
-	// 	}
-	// 	wordList = filteredList
-	// }
-	greenMatches := GetAllWordsThatContain(guess, word, wordList)
-	yellowMatches := GetAllWordsThatMatch(guess, word, wordList)
-	wordWithOut := getWordsWithoutLetters(guess, word, wordList)
-	subset := SubSetEmptyLists(greenMatches, yellowMatches, wordWithOut)
+	if guess == "" {
+		return ""
+	}
+	subset := filterCandidates(guess, word, wordList)
 	return firstGuessFunc(subset)
 }
 
@@ -362,30 +390,34 @@ var AIGuessNum = 0
 var AIGotIt = false
 
 func CompeteLoop(word string, wordList []string) {
+	guess := FirstGuess(wordList)
 	for i := 0; i < 6; i++ {
-		guess := CompeteEnhanced(word, wordList, FirstGuess)
+		if guess == "" {
+			break
+		}
 		Wordle.ShowResultsEnhancedAI(guess, word)
 		AIGuessNum++
 		if Wordle.DoesGuessMatch(guess, word) {
 			fmt.Println("AI Got It!")
 			AIGotIt = true
-			break
+			return
 		}
-		matches := GetAllWordsThatContain(guess, word, wordList)
-		contained := GetAllWordsThatMatch(guess, word, wordList)
-		wordWithOut := getWordsWithoutLetters(guess, word, wordList)
-		wordList = SubSetEmptyLists(matches, contained, wordWithOut)
+		wordList = filterCandidates(guess, word, wordList)
+		guess = FirstGuess(wordList)
+	}
+	if !AIGotIt {
+		fmt.Println("AI is out of guesses! The word was", word)
 	}
 }
 
+// ResetState clears the AI's per-game state so a fresh run starts from zero.
+func ResetState() {
+	AIGuessNum = 0
+	AIGotIt = false
+}
+
 func AIPlay(word string) {
-	// fmt.Println(" __        __            _ _      ")
-	// fmt.Println(" \\ \\      / /__  _ __ __| | | ___ ")
-	// fmt.Println("  \\ \\ /\\ / / _ \\| '__/ _` | |/ _ \\")
-	// fmt.Println("   \\ V  V / (_) | | | (_| | |  __/")
-	// fmt.Println("    \\_/\\_/ \\___/|_|  \\__,_|_|\\___|")
-	// fmt.Println("-----------------------------------")
 	fmt.Println("AI's turn")
-	wordList := Wordle.ReadFile()
+	wordList := Wordle.LoadAnswerList()
 	CompeteLoop(word, wordList)
 }

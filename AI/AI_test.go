@@ -900,17 +900,17 @@ func TestCompeteEnhanced(t *testing.T) {
 		},
 		{
 			name:       "Case sensitivity",
-			word:       "Apple",
+			word:       "apple",
 			wordList:   []string{"grape", "brick", "table", "apple", "peach"},
 			firstGuess: "grape",
-			expected:   "apple", // Function should be case insensitive
+			expected:   "apple", // Filter is case-sensitive; main.go lowercases inputs before passing to the AI
 		},
 		{
 			name:       "Shuffled word list",
 			word:       "apple",
 			wordList:   []string{"peach", "table", "grape", "brick", "apple"},
 			firstGuess: "peach",
-			expected:   "grape", // Should work with randomized list order
+			expected:   "apple", // After feedback from "peach", "apple" is the only consistent candidate
 		},
 		{
 			name:       "Invalid first guess",

@@ -2,10 +2,12 @@ package Wordle
 
 import (
 	"bufio"
+	_ "embed"
 	"fmt"
 	"math/rand"
 	"os"
 	"strings"
+	"sync"
 )
 
 var (
@@ -16,19 +18,81 @@ var (
 	BlackText = "\033[30m"
 )
 
-func ReadFile() []string {
-	inputFile, err := os.ReadFile("/Users/williamwelden/Developer/TermWordle/WordList.txt")
-	if err != nil {
-		panic(err)
+//go:embed embedded/WordList.txt
+var wordListData string
+
+//go:embed embedded/AnswerList.txt
+var answerListData string
+
+var (
+	guessListOnce  sync.Once
+	guessList      []string
+	answerListOnce sync.Once
+	answerList     []string
+)
+
+func parseList(data string) []string {
+	raw := strings.Split(data, "\n")
+	out := make([]string, 0, len(raw))
+	for _, w := range raw {
+		w = strings.TrimSpace(w)
+		if w != "" {
+			out = append(out, w)
+		}
 	}
-	return strings.Split(string(inputFile), "\n")
+	return out
 }
 
+// LoadGuessList returns the large 14k-word dictionary used to validate guesses.
+func LoadGuessList() []string {
+	guessListOnce.Do(func() {
+		guessList = parseList(wordListData)
+	})
+	return guessList
+}
+
+// LoadAnswerList returns the curated ~2.3k-word answer pool (common English words).
+func LoadAnswerList() []string {
+	answerListOnce.Do(func() {
+		answerList = parseList(answerListData)
+	})
+	return answerList
+}
+
+// ReadFile preserved for backwards compatibility. Returns the guess list.
+func ReadFile() []string {
+	return LoadGuessList()
+}
+
+// GetWord returns a random word from the curated answer pool.
 func GetWord() string {
-	words := ReadFile()
-	length := len(words)
-	randomIndex := rand.Intn(length)
-	return words[randomIndex]
+	words := LoadAnswerList()
+	if len(words) == 0 {
+		panic("answer list is empty — embedded AnswerList.txt is missing or unreadable")
+	}
+	return words[rand.Intn(len(words))]
+}
+
+func isValidGuess(guess string) bool {
+	if len(guess) != 5 {
+		return false
+	}
+	for _, r := range guess {
+		if r < 'a' || r > 'z' {
+			return false
+		}
+	}
+	for _, w := range LoadGuessList() {
+		if w == guess {
+			return true
+		}
+	}
+	for _, w := range LoadAnswerList() {
+		if w == guess {
+			return true
+		}
+	}
+	return false
 }
 
 func GetGuess() string {
@@ -39,15 +103,7 @@ func GetGuess() string {
 		fmt.Println("Please enter a 5 letter word")
 		return GetGuess()
 	}
-	wordList := ReadFile()
-	isValidWord := false
-	for _, word := range wordList {
-		if strings.TrimSpace(word) == guess {
-			isValidWord = true
-			break
-		}
-	}
-	if !isValidWord {
+	if !isValidGuess(guess) {
 		fmt.Println("Not a valid word")
 		return GetGuess()
 	}
@@ -109,6 +165,13 @@ func TrackLetterUsage(word string) map[rune]int {
 
 func CheckGuessWithDuplicates(guess, word string) []string {
 	results := make([]string, len(guess))
+	if len(guess) != len(word) {
+		// Lengths mismatch — every position is gray to avoid index panic.
+		for i := range results {
+			results[i] = "gray"
+		}
+		return results
+	}
 	letterUsage := TrackLetterUsage(word)
 	for i := range guess {
 		if guess[i] == word[i] {

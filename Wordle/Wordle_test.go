@@ -13,7 +13,7 @@ func TestReadFile(t *testing.T) {
 		t.Errorf("ReadFile returned an empty list")
 	}
 	if len(wordList) != 14855 {
-		t.Errorf("ReadFile returned %d words, expected 10000", len(wordList))
+		t.Errorf("ReadFile returned %d words, expected 14855", len(wordList))
 	}
 }
 func TestGetWord(t *testing.T) {
@@ -21,9 +21,9 @@ func TestGetWord(t *testing.T) {
 	if len(word) != 5 {
 		t.Errorf("GetWord returned a word with length %d, expected 5", len(word))
 	}
-	wordList := ReadFile()
-	if !slices.Contains(wordList, word) {
-		t.Errorf("GetWord returned a word that is not in the word list")
+	answers := LoadAnswerList()
+	if !slices.Contains(answers, word) {
+		t.Errorf("GetWord returned a word that is not in the answer list")
 	}
 }
 
